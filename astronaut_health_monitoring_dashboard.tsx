@@ -27,7 +27,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   AlertOctagon,
-  Radio,
   Sparkles,
   ChevronLeft,
   ChevronRight,
@@ -1812,7 +1811,6 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState(12); // Start on Day 12 (CO2 + Renal Alert) to immediately show rich clinical insights
   const [selectedOrgan, setSelectedOrgan] = useState('heart');
   const [heartChartSubTab, setHeartChartSubTab] = useState('hr_bp'); // 'hr_bp' | 'hrv_spo2'
-  const [commsMode, setCommsMode] = useState('Lunar'); // 'LEO' | 'Lunar' | 'Mars'
   const [darkMode, setDarkMode] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
 
@@ -2201,11 +2199,8 @@ export default function App() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-lg sm:text-xl font-extrabold tracking-tight">
-                    ASTROMED-NEO
+                    AxoMed
                   </h1>
-                  <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30">
-                    {ASTRONAUT_PROFILE.mission_id}
-                  </span>
                   {renderStatusPill(
                     currentDayData.alert_status,
                     `Day ${currentDayData.mission_day}: ${
@@ -2231,30 +2226,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right Controls: Distance/Comms Mode, Daily Crew Check-In, Export, Dark Mode */}
+            {/* Right Controls: Daily Crew Check-In, Export, Dark Mode */}
             <div className="flex flex-wrap items-center gap-2.5">
-              {/* Distance From Earth Comms Selector */}
-              <div className={`flex items-center gap-1 p-1.5 rounded-2xl ${neuInset}`}>
-                <Radio className="w-4 h-4 ml-2 text-sky-500 hidden sm:block" />
-                {[
-                  { id: 'LEO', label: 'LEO (Real-Time)' },
-                  { id: 'Lunar', label: 'Lunar (1.3s Delay)' },
-                  { id: 'Mars', label: 'Mars (20m Auto-Triage)' }
-                ].map((mode) => (
-                  <button
-                    key={mode.id}
-                    onClick={() => setCommsMode(mode.id)}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      commsMode === mode.id
-                        ? 'bg-sky-500 text-white shadow-sm'
-                        : 'opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-
               {/* Open Daily Crew Check-In Modal Button */}
               <button
                 onClick={() => setShowCheckInModal(true)}
@@ -3168,14 +3141,10 @@ export default function App() {
                   darkMode={darkMode}
                 />
                 <span className="text-xs font-extrabold tracking-wide text-pink-500 mt-1">
-                  Dr. Axo • Bio-AI Companion
+                  Dr. Axo • Your Friendly Companion
                 </span>
                 <span className="text-[10px] font-semibold opacity-65">
-                  {commsMode === 'Mars'
-                    ? 'Autonomous Deep-Space Triage'
-                    : commsMode === 'Lunar'
-                    ? 'Artemis 1.3s Delay Link'
-                    : 'Houston Live Telemetry'}
+                  On-Board Autonomous Triage
                 </span>
               </div>
 
@@ -3189,9 +3158,7 @@ export default function App() {
                     </h3>
                   </div>
                   <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-pink-500/15 text-pink-600 dark:text-pink-400">
-                    {commsMode === 'Mars'
-                      ? '⚡ 20m One-Way Delay: Autonomous Action Unlocked'
-                      : '📡 Telemetry Synced with Ground Flight Surgeon'}
+                    🛰️ Fully Local • No Earth Link Required
                   </span>
                 </div>
 
