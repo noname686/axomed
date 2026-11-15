@@ -5,7 +5,17 @@
 
 🔗 **[Live Demo](https://noname686.github.io/axomed/)**
 
-![image](screenshots/Screenshot_1.png), ![image](screenshots/Screenshot_2.png), ![image](screenshots/Screenshot_3.png), ![image](screenshots/Screenshot_4.png), ![image](screenshots/Screenshot_5.png), ![image](screenshots/Screenshot_6.png)
+<details>
+<summary>📸 <strong>Screenshots Album (Click to expand)</strong></summary>
+
+<br>
+
+| | | |
+| :---: | :---: | :---: |
+| <img src="screenshots/Screenshot_1.png" width="260" alt="Screenshot 1" /> | <img src="screenshots/Screenshot_2.png" width="260" alt="Screenshot 2" /> | <img src="screenshots/Screenshot_3.png" width="260" alt="Screenshot 3" /> |
+| <img src="screenshots/Screenshot_4.png" width="260" alt="Screenshot 4" /> | <img src="screenshots/Screenshot_5.png" width="260" alt="Screenshot 5" /> | <img src="screenshots/Screenshot_6.png" width="260" alt="Screenshot 6" /> |
+
+</details>
 
 > **Note:** AxoMed is a **visual & interactive UI prototype** powered by a **synthetic 30-day dataset** for demonstration purposes (not connected to live spacecraft sensors and not clinically validated).
 
