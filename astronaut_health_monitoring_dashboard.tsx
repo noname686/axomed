@@ -41,7 +41,11 @@ import {
   RefreshCw,
   BookHeart,
   Lock,
-  ChevronDown
+  ChevronDown,
+  Pill,
+  Bell,
+  Trash2,
+  Calendar
 } from 'lucide-react';
 
 // ============================================================================
@@ -1103,6 +1107,146 @@ const INITIAL_DIARY_ENTRIES = [
 ];
 
 // ============================================================================
+// 2c. PILLS & COUNTERMEASURE CALENDAR (MONTH 1: DAYS 1-30 & MONTH 2: DAYS 31-60)
+// ============================================================================
+const PILL_CATALOG = {
+  vit_d3: {
+    id: 'vit_d3',
+    name: 'Vitamin D3 + Spaceflight Multivitamin',
+    dose: '1000 IU + 1 cap',
+    timing: 'Morning with breakfast & 250 mL water',
+    category: 'baseline',
+    reason: 'Daily microgravity bone mineral & micronutrient maintenance'
+  },
+  potassium_citrate: {
+    id: 'potassium_citrate',
+    name: 'Oral Potassium Citrate',
+    dose: '20 mEq (2 tabs)',
+    timing: 'Morning & Evening — drink with 2.5L total daily water',
+    category: 'countermeasure',
+    reason: 'Alkalinizes urine to prevent calcium oxalate kidney stones (OSD-656)'
+  },
+  eva_antioxidant: {
+    id: 'eva_antioxidant',
+    name: 'Post-EVA Antioxidant Recovery Pack',
+    dose: 'Vit C 500mg + Vit E + CoQ10',
+    timing: 'Immediately post-EVA with 500 mL electrolyte water',
+    category: 'countermeasure',
+    reason: 'Counters suit radiation oxidative stress & autonomic fatigue (CSA-EVARM)'
+  },
+  antiviral_dermal: {
+    id: 'antiviral_dermal',
+    name: 'Prophylactic Oral Antiviral + Hydrocortisone',
+    dose: 'Valacyclovir 500mg oral + 1% topical',
+    timing: 'Morning & Evening with water (plus topical to deltoid)',
+    category: 'countermeasure',
+    reason: 'Stress-induced immune shift & deltoid rash protocol (OSD-570 / OSD-574)'
+  },
+  spe_radioprotectant: {
+    id: 'spe_radioprotectant',
+    name: 'Emergency Oral Radioprotectant Pack',
+    dose: 'NAC 600mg + High-Potency Antioxidants',
+    timing: 'Immediate inside Storm Shelter with 400 mL water',
+    category: 'emergency',
+    reason: 'Acute cellular radioprotection during Solar Particle Event (CSA-Rad-2026)'
+  },
+  folate_b12_iron: {
+    id: 'folate_b12_iron',
+    name: 'Folate + Vitamin B12 + Bioavailable Iron Pack',
+    dose: 'Folate 400mcg + B12 500mcg + Iron 18mg',
+    timing: 'Morning with Vitamin C ration & 300 mL water',
+    category: 'countermeasure',
+    reason: 'Supports erythropoiesis for progressive Space Anemia (OSD-569)'
+  }
+};
+
+const QUICK_CUSTOM_PILL_PRESETS = [
+  { name: 'Melatonin', dose: '3 mg', timing: '30 min before sleep with water', reason: 'Circadian alignment & sleep support' },
+  { name: 'Electrolyte Rehydration Tab', dose: '1 effervescent tab', timing: 'Dissolve in 500 mL water', reason: 'Plasma volume & orthostatic support' },
+  { name: 'Magnesium Glycinate', dose: '200 mg', timing: 'Evening with water', reason: 'Muscle recovery & sleep quality' },
+  { name: 'Acetaminophen', dose: '500 mg', timing: 'With 250 mL water as needed', reason: 'CO2 or tension headache relief' }
+];
+
+function buildInitial60DayPillSchedule() {
+  const schedule = {};
+  for (let day = 1; day <= 60; day++) {
+    const items = [
+      {
+        uid: `d${day}-vit_d3`,
+        catalogId: 'vit_d3',
+        name: PILL_CATALOG.vit_d3.name,
+        dose: PILL_CATALOG.vit_d3.dose,
+        timing: PILL_CATALOG.vit_d3.timing,
+        category: PILL_CATALOG.vit_d3.category,
+        reason: PILL_CATALOG.vit_d3.reason,
+        taken: day <= 30,
+        isCustom: false
+      }
+    ];
+
+    const addCatalogPill = (catId, isTaken, customReason = '') => {
+      const c = PILL_CATALOG[catId];
+      items.push({
+        uid: `d${day}-${catId}`,
+        catalogId: catId,
+        name: c.name,
+        dose: c.dose,
+        timing: c.timing,
+        category: c.category,
+        reason: customReason || c.reason,
+        taken: isTaken,
+        isCustom: false
+      });
+    };
+
+    // Exact matches to INITIAL_30D_DATA & drAxoBriefing:
+    if (day === 12 || day === 13) {
+      addCatalogPill('potassium_citrate', true);
+    }
+    if (day === 19) {
+      addCatalogPill('eva_antioxidant', true);
+    }
+    if (day >= 20 && day <= 22) {
+      addCatalogPill('antiviral_dermal', true);
+    }
+    if (day === 21) {
+      addCatalogPill('spe_radioprotectant', true);
+    }
+    if (day >= 28 && day <= 30) {
+      addCatalogPill('folate_b12_iron', true);
+    }
+
+    // Month 2 (Days 31-60) pre-scheduled continuation & planned countermeasures:
+    if (day >= 31 && day <= 34) {
+      addCatalogPill(
+        'folate_b12_iron',
+        false,
+        'Planned Day 31-34 continuation of 7-day Space Anemia course started on Day 28 (OSD-569)'
+      );
+    }
+    if (day === 38 || day === 39) {
+      addCatalogPill(
+        'potassium_citrate',
+        false,
+        'Scheduled Month 2 prophylactic renal alkalinization check (OSD-656)'
+      );
+    }
+    if (day === 45) {
+      addCatalogPill(
+        'eva_antioxidant',
+        false,
+        'Planned Month 2 EVA spacewalk antioxidant pre/post pack (CSA-EVARM)'
+      );
+    }
+
+    schedule[day] = items;
+  }
+  return schedule;
+}
+
+const INITIAL_PILL_SCHEDULE = buildInitial60DayPillSchedule();
+
+// ============================================================================
 // 3. ORGAN SYSTEM DEFINITIONS & EVALUATION LOGIC
 // ============================================================================
 const BODY_SYSTEMS = {
@@ -1861,6 +2005,24 @@ export default function App() {
   const [checkInDiaryOpen, setCheckInDiaryOpen] = useState(true);
   const [diaryPanelOpen, setDiaryPanelOpen] = useState(false);
 
+  // Pills & Countermeasure Calendar State (Month 1: Days 1-30, Month 2: Days 31-60)
+  const [pillSchedule, setPillSchedule] = useState(INITIAL_PILL_SCHEDULE);
+  const [pillsPanelOpen, setPillsPanelOpen] = useState(false);
+  const [pillCalendarMonth, setPillCalendarMonth] = useState(1); // 1 = Days 1-30, 2 = Days 31-60
+  const [selectedPillDay, setSelectedPillDay] = useState(12);
+  const [newPillForm, setNewPillForm] = useState({
+    name: '',
+    dose: '',
+    timing: 'Morning with 250 mL water',
+    reason: 'Crew personal schedule',
+    startDay: 12,
+    durationDays: 1
+  });
+  const [checkInPillsOpen, setCheckInPillsOpen] = useState(true);
+  const [checkInSelectedCatalogIds, setCheckInSelectedCatalogIds] = useState(['vit_d3', 'folate_b12_iron']);
+  const [checkInCustomPillName, setCheckInCustomPillName] = useState('');
+  const [checkInCustomPillDose, setCheckInCustomPillDose] = useState('');
+
   // Export menu & Import state
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const exportMenuRef = useRef(null);
@@ -1933,6 +2095,89 @@ export default function App() {
   useEffect(() => {
     return () => clearTimeout(pvtTimeoutRef.current);
   }, []);
+
+  // Sync Pills Calendar day when user scrubs the main mission timeline
+  useEffect(() => {
+    setSelectedPillDay(selectedDay);
+    setPillCalendarMonth(selectedDay > 30 ? 2 : 1);
+    setNewPillForm((prev) => ({ ...prev, startDay: selectedDay }));
+  }, [selectedDay]);
+
+  // Dynamically compute recommended catalog pills for Check-In modal based on entered vitals & Month 2 schedule
+  const checkInAutoRecommendedIds = useMemo(() => {
+    const rec = new Set(['vit_d3']);
+    const existing = pillSchedule[nextMissionDay] || [];
+    existing.forEach((p) => {
+      if (p.catalogId) rec.add(p.catalogId);
+    });
+    if (Number(checkInForm.water_intake_liters) < 2.0) rec.add('potassium_citrate');
+    if (Number(checkInForm.blood_hemoglobin_g_dL) <= 12.0) rec.add('folate_b12_iron');
+    if (Number(checkInForm.daily_dose_bfo_mSv) >= 1.5) rec.add('spe_radioprotectant');
+    if (checkInForm.dermal_status === 'Rash_Detected') rec.add('antiviral_dermal');
+    return Array.from(rec);
+  }, [checkInForm, pillSchedule, nextMissionDay]);
+
+  useEffect(() => {
+    if (showCheckInModal) {
+      setCheckInSelectedCatalogIds(checkInAutoRecommendedIds);
+    }
+  }, [showCheckInModal, checkInAutoRecommendedIds]);
+
+  const handleTogglePillTaken = (day, uid) => {
+    setPillSchedule((prev) => ({
+      ...prev,
+      [day]: (prev[day] || []).map((item) => (item.uid === uid ? { ...item, taken: !item.taken } : item))
+    }));
+  };
+
+  const handleMarkAllDayPillsTaken = (day) => {
+    setPillSchedule((prev) => ({
+      ...prev,
+      [day]: (prev[day] || []).map((item) => ({ ...item, taken: true }))
+    }));
+  };
+
+  const handleDeleteCustomPill = (day, uid) => {
+    setPillSchedule((prev) => ({
+      ...prev,
+      [day]: (prev[day] || []).filter((item) => item.uid !== uid)
+    }));
+  };
+
+  const handleAddCustomPillToCalendar = (e) => {
+    e.preventDefault();
+    const name = newPillForm.name.trim();
+    if (!name) return;
+    const dose = newPillForm.dose.trim() || '1 dose';
+    const timing = newPillForm.timing.trim() || 'With water';
+    const reason = newPillForm.reason.trim() || 'Added by crew';
+    const start = Math.max(1, Math.min(60, Number(newPillForm.startDay) || selectedPillDay));
+    const dur = Math.max(1, Math.min(30, Number(newPillForm.durationDays) || 1));
+    const end = Math.min(60, start + dur - 1);
+
+    setPillSchedule((prev) => {
+      const next = { ...prev };
+      for (let d = start; d <= end; d++) {
+        const cur = next[d] ? [...next[d]] : [];
+        cur.push({
+          uid: `custom-${d}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          catalogId: null,
+          name,
+          dose,
+          timing,
+          category: 'custom',
+          reason,
+          taken: false,
+          isCustom: true
+        });
+        next[d] = cur;
+      }
+      return next;
+    });
+    setSelectedPillDay(start);
+    setPillCalendarMonth(start > 30 ? 2 : 1);
+    setNewPillForm((prev) => ({ ...prev, name: '', dose: '' }));
+  };
 
   // Current Day Data & Organ Statuses
   const currentDayData = useMemo(() => {
@@ -2214,6 +2459,44 @@ export default function App() {
 
     setMissionData((prev) => [...prev, newEntry]);
     setDiaryEntries((prev) => [...prev, { mission_day: newDayNum, note: diaryNote }]);
+    setPillSchedule((prev) => {
+      const existingCustom = (prev[newDayNum] || []).filter((p) => p.isCustom);
+      const loggedCatalogPills = checkInSelectedCatalogIds.map((catId) => {
+        const c = PILL_CATALOG[catId];
+        return {
+          uid: `d${newDayNum}-${catId}`,
+          catalogId: catId,
+          name: c.name,
+          dose: c.dose,
+          timing: c.timing,
+          category: c.category,
+          reason: c.reason,
+          taken: true,
+          isCustom: false
+        };
+      });
+      const extraCustom = checkInCustomPillName.trim()
+        ? [
+            {
+              uid: `custom-${newDayNum}-${Date.now()}`,
+              catalogId: null,
+              name: checkInCustomPillName.trim(),
+              dose: checkInCustomPillDose.trim() || '1 dose',
+              timing: 'Logged during Daily Check-In with water',
+              category: 'custom',
+              reason: 'Crew logged during check-in',
+              taken: true,
+              isCustom: true
+            }
+          ]
+        : [];
+      return {
+        ...prev,
+        [newDayNum]: [...loggedCatalogPills, ...existingCustom.map((p) => ({ ...p, taken: true })), ...extraCustom]
+      };
+    });
+    setCheckInCustomPillName('');
+    setCheckInCustomPillDose('');
     setDiaryDraft('');
     setDiaryError('');
     setSelectedDay(newDayNum);
@@ -3479,6 +3762,464 @@ export default function App() {
       </section>
 
       {/* ====================================================================
+          PILLS & COUNTERMEASURE CALENDAR (FOLDABLE, 2-MONTH SLIDER + ALERTS)
+      ==================================================================== */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 mt-6">
+        <div className={`rounded-3xl ${neuCard}`}>
+          {(() => {
+            const activeDayPills = pillSchedule[selectedPillDay] || [];
+            const urgentPills = activeDayPills.filter((p) => p.category !== 'baseline');
+            const pendingCount = activeDayPills.filter((p) => !p.taken).length;
+            const monthStart = pillCalendarMonth === 1 ? 1 : 31;
+            const monthEnd = pillCalendarMonth === 1 ? 30 : 60;
+
+            return (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setPillsPanelOpen((o) => !o)}
+                  className="w-full flex flex-wrap items-center justify-between gap-3 p-5 text-left"
+                  aria-expanded={pillsPanelOpen}
+                >
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold flex flex-wrap items-center gap-2">
+                      <Pill className="w-4 h-4 text-emerald-500" />
+                      <span>Pills &amp; Countermeasure Calendar</span>
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        Day {selectedPillDay}: {activeDayPills.length} {activeDayPills.length === 1 ? 'pill' : 'pills'}
+                      </span>
+                      {urgentPills.length > 0 && (
+                        <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <Bell className="w-3 h-3" />
+                          {urgentPills.map((p) => p.name).join(' + ')}
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-xs opacity-70 mt-0.5">
+                      2-month interactive schedule (Days 1–30 &amp; Days 31–60) • Matches onboard medical protocols + custom crew pills
+                    </p>
+                  </div>
+                  <ChevronDown
+                    className={`w-5 h-5 shrink-0 transition-transform ${pillsPanelOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {pillsPanelOpen && (
+                  <div className="px-5 pb-5 space-y-4">
+                    {/* EXPLICIT PILL ALERT BANNER: SAYS EXACTLY WHAT PILLS TO DRINK/TAKE */}
+                    <div
+                      className={`p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                        urgentPills.some((p) => p.category === 'emergency')
+                          ? 'bg-rose-500/15 border-rose-500/40 text-rose-700 dark:text-rose-300'
+                          : urgentPills.length > 0
+                          ? 'bg-amber-500/15 border-amber-500/40 text-amber-800 dark:text-amber-300'
+                          : 'bg-sky-500/10 border-sky-500/30 text-sky-800 dark:text-sky-300'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-xl bg-white/50 dark:bg-slate-900/50 shrink-0 mt-0.5">
+                          <Bell className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-extrabold uppercase tracking-wider">
+                              {urgentPills.length > 0
+                                ? `Active Pill Alert — Mission Day ${selectedPillDay}`
+                                : `Daily Supplement Reminder — Mission Day ${selectedPillDay}`}
+                            </span>
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/60 dark:bg-slate-900/60">
+                              {pendingCount === 0
+                                ? '✓ All doses marked taken'
+                                : `${pendingCount} ${pendingCount === 1 ? 'dose' : 'doses'} to drink`}
+                            </span>
+                          </div>
+                          <p className="text-xs sm:text-sm font-bold mt-1 leading-relaxed">
+                            {activeDayPills.length > 0 ? (
+                              <>
+                                Drink today:{' '}
+                                {activeDayPills
+                                  .map((p) => `${p.name} (${p.dose} — ${p.timing})`)
+                                  .join('  •  ')}
+                              </>
+                            ) : (
+                              'No pills scheduled for this day.'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      {pendingCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleMarkAllDayPillsTaken(selectedPillDay)}
+                          className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm shrink-0 transition-all"
+                        >
+                          ✓ Mark All Day {selectedPillDay} Pills Taken
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 3-COLUMN LAYOUT: (1) MONTH SLIDER CALENDAR, (2) DAY PILL CHECKLIST, (3) ADD CUSTOM PILL */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                      {/* Column 1: 2-Month Slidable Calendar Grid (5 cols) */}
+                      <div className={`lg:col-span-5 p-4 rounded-2xl ${neuInset}`}>
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <div>
+                            <span className="text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                              <Calendar className="w-4 h-4 text-sky-500" />
+                              {pillCalendarMonth === 1
+                                ? 'Month 1 (Days 1–30 • Current)'
+                                : 'Month 2 (Days 31–60 • Next Month)'}
+                            </span>
+                            <span className="text-[11px] opacity-65 block">
+                              Slide between months or click any day to inspect/add pills
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPillCalendarMonth(1);
+                                if (selectedPillDay > 30) setSelectedPillDay(selectedDay <= 30 ? selectedDay : 30);
+                              }}
+                              className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
+                                pillCalendarMonth === 1 ? 'bg-sky-500 text-white shadow-sm' : neuBtn
+                              }`}
+                            >
+                              M1 (1–30)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPillCalendarMonth(2);
+                                if (selectedPillDay <= 30) setSelectedPillDay(31);
+                              }}
+                              className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
+                                pillCalendarMonth === 2 ? 'bg-sky-500 text-white shadow-sm' : neuBtn
+                              }`}
+                            >
+                              M2 (31–60)
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 6x5 30-Day Grid */}
+                        <div className="grid grid-cols-6 gap-1.5">
+                          {Array.from({ length: 30 }, (_, i) => monthStart + i).map((day) => {
+                            const dayItems = pillSchedule[day] || [];
+                            const hasEmergency = dayItems.some((p) => p.category === 'emergency');
+                            const hasCountermeasure = dayItems.some((p) => p.category === 'countermeasure');
+                            const hasCustom = dayItems.some((p) => p.isCustom);
+                            const allTaken = dayItems.length > 0 && dayItems.every((p) => p.taken);
+                            const isSelected = day === selectedPillDay;
+
+                            return (
+                              <button
+                                type="button"
+                                key={day}
+                                onClick={() => {
+                                  setSelectedPillDay(day);
+                                  setNewPillForm((prev) => ({ ...prev, startDay: day }));
+                                  if (day <= missionData.length) {
+                                    setSelectedDay(day);
+                                  }
+                                }}
+                                title={`Day ${day}: ${dayItems.map((p) => p.name).join(', ')}`}
+                                className={`relative p-2 rounded-xl text-left transition-all flex flex-col justify-between min-h-[52px] ${
+                                  isSelected ? `${neuInset} ring-2 ring-sky-500` : neuBtn
+                                }`}
+                              >
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="text-[11px] font-extrabold">D{day}</span>
+                                  {allTaken ? (
+                                    <span className="text-[9px] font-extrabold text-emerald-500">✓</span>
+                                  ) : (
+                                    <span className="text-[9px] font-bold opacity-60">{dayItems.length}p</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400" title="Daily Baseline" />
+                                  {hasCountermeasure && (
+                                    <span className="w-2 h-2 rounded-full bg-amber-500" title="Medical Countermeasure" />
+                                  )}
+                                  {hasEmergency && (
+                                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="Emergency Pack" />
+                                  )}
+                                  {hasCustom && (
+                                    <span className="w-2 h-2 rounded-full bg-violet-500" title="Custom Crew Pill" />
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Legend + Prev/Next Month Slider Controls */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-400/20 text-[10px] font-bold">
+                          <div className="flex flex-wrap items-center gap-2.5 opacity-80">
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-sky-400" /> Daily Vit D3
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-amber-500" /> Protocol Pack
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-rose-500" /> SPE Emergency
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-violet-500" /> Custom Pill
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              disabled={pillCalendarMonth === 1}
+                              onClick={() => {
+                                setPillCalendarMonth(1);
+                                setSelectedPillDay(12);
+                              }}
+                              className={`p-1 rounded-lg ${pillCalendarMonth === 1 ? 'opacity-30' : neuBtn}`}
+                              title="Previous Month (Days 1-30)"
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="px-1">Month {pillCalendarMonth}/2</span>
+                            <button
+                              type="button"
+                              disabled={pillCalendarMonth === 2}
+                              onClick={() => {
+                                setPillCalendarMonth(2);
+                                setSelectedPillDay(31);
+                              }}
+                              className={`p-1 rounded-lg ${pillCalendarMonth === 2 ? 'opacity-30' : neuBtn}`}
+                              title="Next Month (Days 31-60)"
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Column 2: Selected Day Pill Regimen & Dose Checklist (4 cols) */}
+                      <div className={`lg:col-span-4 p-4 rounded-2xl flex flex-col justify-between ${neuInset}`}>
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <div>
+                              <span className="text-xs font-extrabold uppercase tracking-wider text-sky-500">
+                                Mission Day {selectedPillDay} Regimen
+                              </span>
+                              <p className="text-[11px] opacity-70">
+                                {selectedPillDay <= missionData.length
+                                  ? 'Synced with logged mission telemetry'
+                                  : 'Planned schedule for upcoming month'}
+                              </p>
+                            </div>
+                            <span className="text-xs font-extrabold px-2.5 py-1 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                              {activeDayPills.filter((p) => p.taken).length} / {activeDayPills.length} Taken
+                            </span>
+                          </div>
+
+                          <div className="space-y-2.5 max-h-[310px] overflow-y-auto pr-1">
+                            {activeDayPills.map((item) => (
+                              <div
+                                key={item.uid}
+                                className={`p-3 rounded-2xl transition-all ${neuCardSm} ${
+                                  item.category === 'emergency'
+                                    ? 'border-l-4 border-l-rose-500'
+                                    : item.category === 'countermeasure'
+                                    ? 'border-l-4 border-l-amber-500'
+                                    : item.isCustom
+                                    ? 'border-l-4 border-l-violet-500'
+                                    : 'border-l-4 border-l-sky-400'
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleTogglePillTaken(selectedPillDay, item.uid)}
+                                    className="flex items-start gap-2.5 text-left flex-1"
+                                  >
+                                    <span
+                                      className={`w-5 h-5 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5 transition-all ${
+                                        item.taken
+                                          ? 'bg-emerald-500 text-white'
+                                          : 'border-2 border-slate-400/50 text-transparent'
+                                      }`}
+                                    >
+                                      ✓
+                                    </span>
+                                    <div>
+                                      <p className={`text-xs font-extrabold ${item.taken ? 'line-through opacity-75' : ''}`}>
+                                        {item.name}
+                                      </p>
+                                      <p className="text-[11px] font-bold text-sky-600 dark:text-sky-400 mt-0.5">
+                                        {item.dose} • {item.timing}
+                                      </p>
+                                      <p className="text-[10px] opacity-70 mt-0.5 leading-snug">{item.reason}</p>
+                                    </div>
+                                  </button>
+                                  {item.isCustom && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteCustomPill(selectedPillDay, item.uid)}
+                                      title="Remove custom pill"
+                                      className="p-1 rounded-lg opacity-60 hover:opacity-100 text-rose-500"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Quick Jump to Key Protocol Days */}
+                        <div className="mt-3 pt-2.5 border-t border-slate-400/20">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider opacity-65 block mb-1.5">
+                            Jump to Triggered Protocol Days:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[
+                              { day: 12, label: 'D12–13 Potassium Citrate' },
+                              { day: 19, label: 'D19 EVA Antioxidant' },
+                              { day: 20, label: 'D20–22 Antiviral' },
+                              { day: 21, label: 'D21 SPE Pack' },
+                              { day: 28, label: 'D28–34 Folate/Iron' }
+                            ].map((q) => (
+                              <button
+                                key={q.day}
+                                type="button"
+                                onClick={() => {
+                                  setPillCalendarMonth(q.day > 30 ? 2 : 1);
+                                  setSelectedPillDay(q.day);
+                                  if (q.day <= missionData.length) setSelectedDay(q.day);
+                                }}
+                                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                                  selectedPillDay === q.day ? 'bg-sky-500 text-white' : neuBtn
+                                }`}
+                              >
+                                {q.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Column 3: Add Custom Pill to Month 1 or Month 2 (3 cols) */}
+                      <div className={`lg:col-span-3 p-4 rounded-2xl ${neuInset}`}>
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-violet-500 block mb-1">
+                          + Add Pill You Need
+                        </span>
+                        <p className="text-[11px] opacity-70 mb-2.5">
+                          Schedule an extra medication or supplement for any day in Month 1 or Month 2
+                        </p>
+
+                        {/* Quick 1-Click Presets */}
+                        <div className="mb-3">
+                          <span className="text-[10px] font-bold opacity-65 block mb-1">Quick Presets:</span>
+                          <div className="flex flex-wrap gap-1">
+                            {QUICK_CUSTOM_PILL_PRESETS.map((preset) => (
+                              <button
+                                key={preset.name}
+                                type="button"
+                                onClick={() =>
+                                  setNewPillForm((prev) => ({
+                                    ...prev,
+                                    name: preset.name,
+                                    dose: preset.dose,
+                                    timing: preset.timing,
+                                    reason: preset.reason
+                                  }))
+                                }
+                                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${neuBtn}`}
+                              >
+                                + {preset.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <form onSubmit={handleAddCustomPillToCalendar} className="space-y-2.5">
+                          <div>
+                            <label className="text-[10px] font-bold opacity-75 block mb-0.5">Pill / Medication Name *</label>
+                            <input
+                              type="text"
+                              value={newPillForm.name}
+                              onChange={(e) => setNewPillForm({ ...newPillForm, name: e.target.value })}
+                              placeholder="e.g., Melatonin, Ibuprofen..."
+                              className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-bold bg-transparent focus:outline-none ${neuCardSm}`}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] font-bold opacity-75 block mb-0.5">Dose</label>
+                              <input
+                                type="text"
+                                value={newPillForm.dose}
+                                onChange={(e) => setNewPillForm({ ...newPillForm, dose: e.target.value })}
+                                placeholder="e.g., 3 mg"
+                                className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-bold bg-transparent focus:outline-none ${neuCardSm}`}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold opacity-75 block mb-0.5">Start Day (1–60)</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={60}
+                                value={newPillForm.startDay}
+                                onChange={(e) => setNewPillForm({ ...newPillForm, startDay: Number(e.target.value) })}
+                                className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-transparent focus:outline-none text-sky-500 ${neuCardSm}`}
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] font-bold opacity-75 block mb-0.5">How to Drink</label>
+                              <input
+                                type="text"
+                                value={newPillForm.timing}
+                                onChange={(e) => setNewPillForm({ ...newPillForm, timing: e.target.value })}
+                                className={`w-full px-2.5 py-1.5 rounded-xl text-xs bg-transparent focus:outline-none ${neuCardSm}`}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold opacity-75 block mb-0.5">Duration (Days)</label>
+                              <select
+                                value={newPillForm.durationDays}
+                                onChange={(e) => setNewPillForm({ ...newPillForm, durationDays: Number(e.target.value) })}
+                                className={`w-full px-2 py-1.5 rounded-xl text-xs font-bold bg-transparent focus:outline-none ${neuCardSm}`}
+                              >
+                                <option value={1}>1 Day (Day {newPillForm.startDay})</option>
+                                <option value={3}>3 Days</option>
+                                <option value={5}>5 Days</option>
+                                <option value={7}>7 Days</option>
+                                <option value={14}>14 Days</option>
+                                <option value={30}>30 Days (Full Month)</option>
+                              </select>
+                            </div>
+                          </div>
+                          <button
+                            type="submit"
+                            className="w-full py-2 rounded-xl text-xs font-extrabold bg-violet-500 hover:bg-violet-600 text-white shadow-sm transition-all"
+                          >
+                            + Add Pill to Day {newPillForm.startDay}
+                            {newPillForm.durationDays > 1
+                              ? `–${Math.min(60, Number(newPillForm.startDay) + Number(newPillForm.durationDays) - 1)}`
+                              : ''}
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </div>
+      </section>
+
+      {/* ====================================================================
           SCIENTIFIC REFERENCE LIBRARY DRAWER (ALL 13 INVESTIGATIONS)
       ==================================================================== */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 mt-6">
@@ -3826,7 +4567,105 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Row 4: Private Daily Diary (Foldable, Required) */}
+              {/* Row 4: Pills & Countermeasure Selector for Day {nextMissionDay} */}
+              <div className={`rounded-2xl ${neuInset}`}>
+                <button
+                  type="button"
+                  onClick={() => setCheckInPillsOpen((o) => !o)}
+                  className="w-full flex items-center justify-between gap-2 p-3 text-left"
+                  aria-expanded={checkInPillsOpen}
+                >
+                  <span className="text-xs font-extrabold flex items-center gap-1.5">
+                    <Pill className="w-4 h-4 text-emerald-500" />
+                    Pills &amp; Countermeasures — Day {nextMissionDay}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                      {checkInSelectedCatalogIds.length} selected
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${checkInPillsOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {checkInPillsOpen && (
+                  <div className="px-3 pb-3 space-y-2.5">
+                    {/* Live Pill Alert inside Check-In based on vitals & Month 2 schedule */}
+                    <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-xs flex items-start gap-2">
+                      <Bell className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-extrabold block">
+                          Recommended Pills to Drink on Day {nextMissionDay}:
+                        </span>
+                        <span className="opacity-90">
+                          {checkInAutoRecommendedIds
+                            .map((id) => `${PILL_CATALOG[id].name} (${PILL_CATALOG[id].dose})`)
+                            .join(' • ')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {Object.values(PILL_CATALOG).map((pill) => {
+                        const checked = checkInSelectedCatalogIds.includes(pill.id);
+                        const isRec = checkInAutoRecommendedIds.includes(pill.id);
+                        return (
+                          <label
+                            key={pill.id}
+                            className={`p-2.5 rounded-xl flex items-start gap-2.5 cursor-pointer text-xs transition-all ${
+                              checked ? `${neuCardSm} ring-1 ring-emerald-500/50` : 'opacity-75 hover:opacity-100'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() =>
+                                setCheckInSelectedCatalogIds((prev) =>
+                                  prev.includes(pill.id)
+                                    ? prev.filter((id) => id !== pill.id)
+                                    : [...prev, pill.id]
+                                )
+                              }
+                              className="mt-0.5 accent-emerald-500"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-extrabold">{pill.name}</span>
+                                {isRec && (
+                                  <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                                    Recommended
+                                  </span>
+                                )}
+                              </div>
+                              <span className="block text-[10px] opacity-70">
+                                {pill.dose} • {pill.timing}
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+
+                    {/* Optional extra pill input inside Check-In */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                      <input
+                        type="text"
+                        value={checkInCustomPillName}
+                        onChange={(e) => setCheckInCustomPillName(e.target.value)}
+                        placeholder="+ Optional extra pill taken today..."
+                        className={`sm:col-span-2 px-3 py-2 rounded-xl text-xs bg-transparent focus:outline-none ${neuCardSm}`}
+                      />
+                      <input
+                        type="text"
+                        value={checkInCustomPillDose}
+                        onChange={(e) => setCheckInCustomPillDose(e.target.value)}
+                        placeholder="Dose (e.g., 200 mg)"
+                        className={`px-3 py-2 rounded-xl text-xs bg-transparent focus:outline-none ${neuCardSm}`}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Row 5: Private Daily Diary (Foldable, Required) */}
               <div className={`rounded-2xl ${neuInset}`}>
                 <button
                   type="button"
