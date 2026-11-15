@@ -1,0 +1,21 @@
+# Dependencies & build output
+node_modules/
+dist/
+dist-ssr/
+
+# Local environment & logs
+*.local
+.env
+.env.*
+logs/
+*.log
+
+# Editor & OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Project docs excluded from repo
+NASA_Human_Spaceflight_Health_Risks.docx
