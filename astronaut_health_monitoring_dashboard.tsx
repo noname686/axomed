@@ -37,7 +37,10 @@ import {
   Dumbbell,
   Info,
   Zap,
-  RefreshCw
+  RefreshCw,
+  BookHeart,
+  Lock,
+  ChevronDown
 } from 'lucide-react';
 
 // ============================================================================
@@ -1063,6 +1066,42 @@ const INITIAL_30D_DATA = [
 ];
 
 // ============================================================================
+// 2b. PRIVATE CREW DIARY (stored locally, never included in telemetry export)
+// ============================================================================
+const INITIAL_DIARY_ENTRIES = [
+  { mission_day: 1, note: 'First full day aboard. Couldn\'t stop staring at Earth through the window during dinner. I feel so small and so lucky at the same time.' },
+  { mission_day: 2, note: 'Still learning to sleep floating. Woke up with my arms drifting over my head like a zombie. Laughed alone in the crew quarters.' },
+  { mission_day: 3, note: 'Called home in my head today: practiced what I\'ll tell Mia about the Moon. She\'ll want to know if it smells like cheese. (It smells like gunpowder, apparently.)' },
+  { mission_day: 4, note: 'Good workout on ARED. Body feels strong. Miss the feeling of rain, which is a weird thing to miss.' },
+  { mission_day: 5, note: 'Quiet day of experiments. Played my old playlist while pipetting. Small routines keep me grounded, even without gravity.' },
+  { mission_day: 6, note: 'Best sleep so far. Dreamt I was swimming in the lake behind grandma\'s house. Woke up happy.' },
+  { mission_day: 7, note: 'One week in. The novelty is fading into routine, and honestly I like routine. Proud of how the crew is clicking.' },
+  { mission_day: 8, note: 'Food is starting to taste the same. Saving the dark chocolate for a hard day. Not today though.' },
+  { mission_day: 9, note: 'Slept poorly, the fans felt louder than usual. Little irritable at the crew meeting. Need to be kinder to myself and others.' },
+  { mission_day: 10, note: 'Headache that won\'t quit and my thoughts feel foggy. Hard to admit it, but I feel a bit homesick tonight.' },
+  { mission_day: 11, note: 'Rough one. Snapped at a crewmate over nothing and apologized after. I hate when tiredness makes me someone I\'m not.' },
+  { mission_day: 12, note: 'Worst day yet. CO2 headache, barely slept, and I think I\'ve been drinking too little water. Opened the dark chocolate. It helped a little.' },
+  { mission_day: 13, note: 'Scrubbers fixed, air feels lighter. Made myself drink properly. Feeling like a person again, slowly.' },
+  { mission_day: 14, note: 'Slept almost 8 hours! Everything looks brighter. Funny how much the mind depends on the body.' },
+  { mission_day: 15, note: 'Halfway point. Watched a sunrise over the lunar horizon. No words. Just tears floating in little spheres.' },
+  { mission_day: 16, note: 'Movie night with the crew, a terrible 80s sci-fi film. We laughed so hard. These people are my family up here.' },
+  { mission_day: 17, note: 'Wrote a letter to my future self for when I\'m back on Earth. Told her not to forget how this feels.' },
+  { mission_day: 18, note: 'Nervous about tomorrow\'s EVA. Went through every procedure twice. Trust the training, Jane.' },
+  { mission_day: 19, note: 'I WALKED OUTSIDE. Seven hours. Exhausted, sore hands, but I have never felt more alive. Nothing will ever compare.' },
+  { mission_day: 20, note: 'Itchy rash on my arm, probably the suit liner. Annoying and a bit worrying. Trying not to google symptoms in my head.' },
+  { mission_day: 21, note: 'Solar storm. Spent the day in the shielded shelter, cramped and anxious. Kept thinking about the people I love. We are safe, but it shook me.' },
+  { mission_day: 22, note: 'Still sheltering part of the day. We played word games to pass the time. Fear turns into dark humor up here, and that\'s okay.' },
+  { mission_day: 23, note: 'Back to normal ops. Gratitude day: for thick walls, for good engineers, for this crew.' },
+  { mission_day: 24, note: 'Rash is fading. Felt light and playful today, did a slow-motion somersault in the module just because I could.' },
+  { mission_day: 25, note: 'Thinking a lot about what I want to do after this mission. Maybe teach. I want kids to look up and feel what I feel.' },
+  { mission_day: 26, note: 'Uneventful day, which is a gift. Read three chapters of my book and fell asleep mid-sentence.' },
+  { mission_day: 27, note: 'Missing coffee from my favorite little cafe. Promised myself the first thing I do back home is sit there for hours.' },
+  { mission_day: 28, note: 'Felt weak and tired during exercise, blood work says hemoglobin is low. Space anemia is real. Eating my iron-rich rations like a good astronaut.' },
+  { mission_day: 29, note: 'Energy creeping back. Spent a long time just looking out the window. I\'m going to miss this view terribly.' },
+  { mission_day: 30, note: 'Day 30. Looking back at these notes, I\'ve been through so much. Tired, proud, a little changed. Thank you, Dr. Axo, for listening.' }
+];
+
+// ============================================================================
 // 3. ORGAN SYSTEM DEFINITIONS & EVALUATION LOGIC
 // ============================================================================
 const BODY_SYSTEMS = {
@@ -1814,6 +1853,13 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
 
+  // Private Crew Diary State (kept separate from telemetry, never exported)
+  const [diaryEntries, setDiaryEntries] = useState(INITIAL_DIARY_ENTRIES);
+  const [diaryDraft, setDiaryDraft] = useState('');
+  const [diaryError, setDiaryError] = useState('');
+  const [checkInDiaryOpen, setCheckInDiaryOpen] = useState(true);
+  const [diaryPanelOpen, setDiaryPanelOpen] = useState(false);
+
   // Check-In Form State for Appending Day 31+
   const nextMissionDay = missionData.length + 1;
   const [checkInForm, setCheckInForm] = useState({
@@ -2043,6 +2089,12 @@ export default function App() {
   // Handle Daily Crew Check-In Form Submission (Adds Day 31+)
   const handleAddDailyCheckIn = (e) => {
     e.preventDefault();
+    const diaryNote = diaryDraft.trim();
+    if (!diaryNote) {
+      setCheckInDiaryOpen(true);
+      setDiaryError('Please write a short diary note before submitting today\'s check-in.');
+      return;
+    }
     const lastEntry = missionData[missionData.length - 1];
     const newDayNum = lastEntry.mission_day + 1;
 
@@ -2137,6 +2189,9 @@ export default function App() {
     };
 
     setMissionData((prev) => [...prev, newEntry]);
+    setDiaryEntries((prev) => [...prev, { mission_day: newDayNum, note: diaryNote }]);
+    setDiaryDraft('');
+    setDiaryError('');
     setSelectedDay(newDayNum);
     setShowCheckInModal(false);
     setPvtState('idle');
@@ -3217,6 +3272,67 @@ export default function App() {
       </main>
 
       {/* ====================================================================
+          PRIVATE CREW DIARY (FOLDABLE, LOCAL-ONLY)
+      ==================================================================== */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 mt-6">
+        <div className={`rounded-3xl ${neuCard}`}>
+          <button
+            type="button"
+            onClick={() => setDiaryPanelOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-3 p-5 text-left"
+            aria-expanded={diaryPanelOpen}
+          >
+            <div>
+              <h3 className="text-sm sm:text-base font-extrabold flex items-center gap-2">
+                <BookHeart className="w-4 h-4 text-pink-500" />
+                Private Crew Diary
+                <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                  {diaryEntries.length} notes
+                </span>
+              </h3>
+              <p className="text-xs opacity-70 flex items-center gap-1 mt-0.5">
+                <Lock className="w-3 h-3" />
+                Stored on board only. Never shared or included in the telemetry export.
+              </p>
+            </div>
+            <ChevronDown
+              className={`w-5 h-5 shrink-0 transition-transform ${diaryPanelOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {diaryPanelOpen && (
+            <div className="px-5 pb-5">
+              <div className="max-h-[420px] overflow-y-auto space-y-2.5 pr-1">
+                {[...diaryEntries]
+                  .sort((a, b) => b.mission_day - a.mission_day)
+                  .map((entry) => {
+                    const isSelected = entry.mission_day === selectedDay;
+                    return (
+                      <button
+                        type="button"
+                        key={entry.mission_day}
+                        onClick={() => setSelectedDay(entry.mission_day)}
+                        title={`Jump to Day ${entry.mission_day}`}
+                        className={`w-full text-left p-3 rounded-2xl flex items-start gap-3 transition-all ${
+                          isSelected ? `${neuInset} ring-2 ring-pink-400/60` : neuBtn
+                        }`}
+                      >
+                        <span className="text-[11px] font-extrabold px-2 py-1 rounded-lg bg-pink-500/15 text-pink-600 dark:text-pink-400 shrink-0">
+                          Day {entry.mission_day}
+                        </span>
+                        <span className="text-xs sm:text-sm leading-relaxed opacity-90 italic">
+                          “{entry.note}”
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ====================================================================
           SCIENTIFIC REFERENCE LIBRARY DRAWER (ALL 13 INVESTIGATIONS)
       ==================================================================== */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 mt-6">
@@ -3542,6 +3658,53 @@ export default function App() {
                     className="w-full bg-transparent text-base font-extrabold focus:outline-none text-purple-500"
                   />
                 </div>
+              </div>
+
+              {/* Row 4: Private Daily Diary (Foldable, Required) */}
+              <div className={`rounded-2xl ${neuInset}`}>
+                <button
+                  type="button"
+                  onClick={() => setCheckInDiaryOpen((o) => !o)}
+                  className="w-full flex items-center justify-between gap-2 p-3 text-left"
+                  aria-expanded={checkInDiaryOpen}
+                >
+                  <span className="text-xs font-extrabold flex items-center gap-1.5">
+                    <BookHeart className="w-4 h-4 text-pink-500" />
+                    Private Diary — Day {nextMissionDay}
+                    <span className="text-rose-500">*</span>
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold flex items-center gap-1 opacity-65">
+                      <Lock className="w-3 h-3" />
+                      Only you can see this
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${checkInDiaryOpen ? 'rotate-180' : ''}`}
+                    />
+                  </span>
+                </button>
+                {checkInDiaryOpen && (
+                  <div className="px-3 pb-3">
+                    <textarea
+                      value={diaryDraft}
+                      onChange={(e) => {
+                        setDiaryDraft(e.target.value);
+                        if (diaryError) setDiaryError('');
+                      }}
+                      maxLength={500}
+                      rows={3}
+                      placeholder="Anything on your mind today? A thought, a worry, a small win..."
+                      className={`w-full p-3 rounded-xl text-sm bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-pink-400/50 ${neuCardSm}`}
+                    />
+                    <div className="flex justify-between text-[10px] mt-1">
+                      <span className="text-rose-500 font-bold">{diaryError}</span>
+                      <span className="opacity-60">{diaryDraft.length} / 500</span>
+                    </div>
+                  </div>
+                )}
+                {!checkInDiaryOpen && diaryError && (
+                  <p className="px-3 pb-3 text-[10px] text-rose-500 font-bold">{diaryError}</p>
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3">
