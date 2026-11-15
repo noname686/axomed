@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="36 22 148 148">
+  <defs>
+    <radialGradient id="helmetGlass" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55" />
+      <stop offset="55%" stop-color="#93C5FD" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.28" />
+    </radialGradient>
+  </defs>
+
+  <!-- Spacesuit Neck Ring -->
+  <ellipse cx="110" cy="144" rx="44" ry="10" fill="#94A3B8" stroke="#64748B" stroke-width="2.5" />
+
+  <!-- Helmet Base Dome -->
+  <circle cx="110" cy="96" r="56" fill="#F1F5F9" stroke="#94A3B8" stroke-width="3.5" />
+
+  <!-- Helmet Antenna -->
+  <line x1="110" y1="40" x2="110" y2="27" stroke="#64748B" stroke-width="4.5" stroke-linecap="round" />
+  <circle cx="110" cy="26" r="6" fill="#10B981" />
+
+  <!-- Helmet Dark Interior -->
+  <circle cx="110" cy="97" r="48" fill="#1E293B" />
+
+  <!-- Axolotl External Frilly Gills -->
+  <g fill="#F472B6" stroke="#DB2777" stroke-width="1.8">
+    <ellipse cx="64" cy="79" rx="13" ry="5.5" transform="rotate(-22 64 79)" />
+    <ellipse cx="61" cy="95" rx="14" ry="5.5" transform="rotate(-4 61 95)" />
+    <ellipse cx="65" cy="111" rx="12" ry="5.5" transform="rotate(18 65 111)" />
+    <ellipse cx="156" cy="79" rx="13" ry="5.5" transform="rotate(22 156 79)" />
+    <ellipse cx="159" cy="95" rx="14" ry="5.5" transform="rotate(4 159 95)" />
+    <ellipse cx="155" cy="111" rx="12" ry="5.5" transform="rotate(-18 155 111)" />
+  </g>
+
+  <!-- Chibi Head -->
+  <ellipse cx="110" cy="99" rx="38" ry="32" fill="#FBCFE8" stroke="#F472B6" stroke-width="2.5" />
+
+  <!-- Rosy Cheeks -->
+  <ellipse cx="84" cy="105" rx="6.5" ry="4" fill="#F43F5E" opacity="0.45" />
+  <ellipse cx="136" cy="105" rx="6.5" ry="4" fill="#F43F5E" opacity="0.45" />
+
+  <!-- Sparkling Eyes -->
+  <circle cx="92" cy="96" r="6.8" fill="#0F172A" />
+  <circle cx="128" cy="96" r="6.8" fill="#0F172A" />
+  <circle cx="89.5" cy="93.5" r="2.7" fill="#FFFFFF" />
+  <circle cx="125.5" cy="93.5" r="2.7" fill="#FFFFFF" />
+  <circle cx="94.5" cy="98.5" r="1.2" fill="#FFFFFF" />
+  <circle cx="130.5" cy="98.5" r="1.2" fill="#FFFFFF" />
+
+  <!-- Happy Smile -->
+  <path d="M 101 107 Q 110 115 119 107" fill="none" stroke="#BE185D" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Visor Glass Highlight -->
+  <circle cx="110" cy="97" r="48" fill="url(#helmetGlass)" />
+  <path d="M 75 74 Q 88 57 110 55" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.55" />
+</svg>
