@@ -1103,7 +1103,7 @@ const INITIAL_DIARY_ENTRIES = [
   { mission_day: 27, note: 'Missing coffee from my favorite little cafe. Promised myself the first thing I do back home is sit there for hours.' },
   { mission_day: 28, note: 'Felt weak and tired during exercise, blood work says hemoglobin is low. Space anemia is real. Eating my iron-rich rations like a good astronaut.' },
   { mission_day: 29, note: 'Energy creeping back. Spent a long time just looking out the window. I\'m going to miss this view terribly.' },
-  { mission_day: 30, note: 'Day 30. Looking back at these notes, I\'ve been through so much. Tired, proud, a little changed. Thank you, Dr. Axo, for listening.' }
+  { mission_day: 30, note: 'Day 30. Looking back at these notes, I\'ve been through so much. Tired, proud, a little changed.' }
 ];
 
 // ============================================================================
