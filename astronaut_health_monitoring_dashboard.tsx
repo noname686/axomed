@@ -23,6 +23,7 @@ import {
   Moon,
   PlusCircle,
   Download,
+  Upload,
   ExternalLink,
   CheckCircle2,
   AlertTriangle,
@@ -1860,6 +1861,29 @@ export default function App() {
   const [checkInDiaryOpen, setCheckInDiaryOpen] = useState(true);
   const [diaryPanelOpen, setDiaryPanelOpen] = useState(false);
 
+  // Export menu & Import state
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef(null);
+  const importInputRef = useRef(null);
+  const [importStatus, setImportStatus] = useState(null); // { type: 'success' | 'error', text }
+
+  // Close export menu on outside click
+  useEffect(() => {
+    if (!exportMenuOpen) return;
+    const onDown = (e) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target)) setExportMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [exportMenuOpen]);
+
+  // Auto-dismiss import status banner
+  useEffect(() => {
+    if (!importStatus) return;
+    const t = setTimeout(() => setImportStatus(null), 5000);
+    return () => clearTimeout(t);
+  }, [importStatus]);
+
   // Check-In Form State for Appending Day 31+
   const nextMissionDay = missionData.length + 1;
   const [checkInForm, setCheckInForm] = useState({
@@ -2197,19 +2221,89 @@ export default function App() {
     setPvtState('idle');
   };
 
-  // Export Dataset as JSON
-  const handleExportJSON = () => {
-    const payload = {
-      astronaut_profile: ASTRONAUT_PROFILE,
-      daily_telemetry_and_labs: missionData
-    };
+  // Download helper
+  const downloadJSON = (payload, filename) => {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `artemis_health_telemetry_${missionData.length}d.json`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Export Health Telemetry as JSON (diary is NOT included)
+  const handleExportHealth = () => {
+    downloadJSON(
+      {
+        export_type: 'axomed_health',
+        exported_at: new Date().toISOString(),
+        astronaut_profile: ASTRONAUT_PROFILE,
+        daily_telemetry_and_labs: missionData
+      },
+      `axomed_health_data_${missionData.length}d.json`
+    );
+    setExportMenuOpen(false);
+  };
+
+  // Export Private Diary as a separate JSON file
+  const handleExportDiary = () => {
+    downloadJSON(
+      {
+        export_type: 'axomed_diary',
+        exported_at: new Date().toISOString(),
+        diary_entries: diaryEntries
+      },
+      `axomed_private_diary_${diaryEntries.length}notes.json`
+    );
+    setExportMenuOpen(false);
+  };
+
+  // Import a previously exported Health or Diary JSON file (auto-detected)
+  const handleImportFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ''; // allow re-importing the same file
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        const isValidDay = (d) => d && typeof d === 'object' && Number.isFinite(Number(d.mission_day));
+
+        if (Array.isArray(data.daily_telemetry_and_labs)) {
+          const days = data.daily_telemetry_and_labs;
+          if (days.length === 0 || !days.every((d) => isValidDay(d) && typeof d.alert_status === 'string')) {
+            throw new Error('Health file has no valid daily records.');
+          }
+          const sorted = days
+            .map((d) => ({ ...d, mission_day: Number(d.mission_day) }))
+            .sort((a, b) => a.mission_day - b.mission_day);
+          setMissionData(sorted);
+          setSelectedDay(sorted[sorted.length - 1].mission_day);
+          setImportStatus({ type: 'success', text: `Imported health data: ${sorted.length} mission days.` });
+        } else if (Array.isArray(data.diary_entries)) {
+          const notes = data.diary_entries;
+          if (!notes.every((n) => isValidDay(n) && typeof n.note === 'string')) {
+            throw new Error('Diary file contains invalid entries.');
+          }
+          const sorted = notes
+            .map((n) => ({ mission_day: Number(n.mission_day), note: n.note }))
+            .sort((a, b) => a.mission_day - b.mission_day);
+          setDiaryEntries(sorted);
+          setImportStatus({ type: 'success', text: `Imported private diary: ${sorted.length} notes.` });
+        } else {
+          throw new Error('Unrecognized file. Please choose an AxoMed health or diary export.');
+        }
+      } catch (err) {
+        setImportStatus({
+          type: 'error',
+          text: err instanceof SyntaxError ? 'Could not read file: not valid JSON.' : err.message
+        });
+      }
+    };
+    reader.onerror = () => setImportStatus({ type: 'error', text: 'Could not read the selected file.' });
+    reader.readAsText(file);
   };
 
   // Status Badge Helper
@@ -2292,14 +2386,66 @@ export default function App() {
                 <span>Log Day {nextMissionDay} Check-In</span>
               </button>
 
-              {/* Export JSON */}
+              {/* Import JSON (Health or Diary, auto-detected) */}
+              <input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={handleImportFile}
+                className="hidden"
+              />
               <button
-                onClick={handleExportJSON}
-                title="Export 30+ Day Telemetry JSON"
-                className={`p-2.5 rounded-2xl transition-all ${neuBtn}`}
+                onClick={() => importInputRef.current && importInputRef.current.click()}
+                title="Import Health Data or Diary (JSON)"
+                className={`flex items-center gap-1.5 p-2.5 rounded-2xl text-xs font-bold transition-all ${neuBtn}`}
               >
-                <Download className="w-4 h-4" />
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Import</span>
               </button>
+
+              {/* Export JSON Menu: Health Data or Private Diary */}
+              <div className="relative" ref={exportMenuRef}>
+                <button
+                  onClick={() => setExportMenuOpen((o) => !o)}
+                  title="Export Health Data or Diary (JSON)"
+                  aria-expanded={exportMenuOpen}
+                  className={`flex items-center gap-1.5 p-2.5 rounded-2xl text-xs font-bold transition-all ${neuBtn}`}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="hidden sm:inline">Export</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${exportMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {exportMenuOpen && (
+                  <div className={`absolute right-0 mt-2 w-64 z-40 rounded-2xl p-2 space-y-1.5 ${neuCard}`}>
+                    <button
+                      onClick={handleExportHealth}
+                      className={`w-full flex items-start gap-2.5 p-2.5 rounded-xl text-left transition-all ${neuBtn}`}
+                    >
+                      <Activity className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                      <span>
+                        <span className="block text-xs font-extrabold">Health Data</span>
+                        <span className="block text-[10px] opacity-65">
+                          {missionData.length} days of telemetry &amp; labs
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={handleExportDiary}
+                      className={`w-full flex items-start gap-2.5 p-2.5 rounded-xl text-left transition-all ${neuBtn}`}
+                    >
+                      <BookHeart className="w-4 h-4 text-pink-500 shrink-0 mt-0.5" />
+                      <span>
+                        <span className="block text-xs font-extrabold flex items-center gap-1">
+                          Private Diary <Lock className="w-3 h-3 opacity-60" />
+                        </span>
+                        <span className="block text-[10px] opacity-65">
+                          {diaryEntries.length} notes, separate file
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Soft UI Light / Dark Theme Toggle */}
               <button
@@ -3292,7 +3438,7 @@ export default function App() {
               </h3>
               <p className="text-xs opacity-70 flex items-center gap-1 mt-0.5">
                 <Lock className="w-3 h-3" />
-                Stored on board only. Never shared or included in the telemetry export.
+                Stored on board only. Never included in the health data export.
               </p>
             </div>
             <ChevronDown
@@ -3394,6 +3540,26 @@ export default function App() {
           </span>
         </div>
       </footer>
+
+      {/* Import Result Toast */}
+      {importStatus && (
+        <div
+          role="status"
+          className={`fixed bottom-5 right-5 z-[60] max-w-sm flex items-start gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold text-white shadow-lg ${
+            importStatus.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
+          }`}
+        >
+          {importStatus.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+          ) : (
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          )}
+          <span>{importStatus.text}</span>
+          <button onClick={() => setImportStatus(null)} className="ml-2 opacity-80 hover:opacity-100">
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ====================================================================
           MODAL: "DAILY CREW CHECK-IN" INPUT SYSTEM (ADD DAY 31+)
