@@ -95,5 +95,10 @@ To ensure our alert rules and medical guidance weren't arbitrary, we built our s
 
 ---
 
+## 🤖 AI / Super Intelligence (SI) Disclosure
+AI coding assistants were used for help in React/TypeScript implementation and debugging, to create synthetic dataset/diary generation, and edit documentation, under the direction of the project author.
+
+---
+
 ## 📄 License
 This project is licensed under the [MIT License](LICENSE).

@@ -1,3 +1,13 @@
+/**
+ * AxoMed — Autonomous Astronaut Health Monitoring Dashboard (Visual Prototype)
+ * NASA Space Apps Challenge 2026
+ *
+ * AI / Super Intelligence (SI) Disclosure:
+ * AI coding assistants were used for help in React/TypeScript implementation
+ * and debugging, to create synthetic dataset/diary generation, and edit
+ * documentation, under the direction of the project author.
+ */
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   ResponsiveContainer,
